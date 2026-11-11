@@ -83,7 +83,6 @@ h1 small{font-size:13px;color:#9a927d;font-weight:400;display:block;margin-top:6
 .court-frame .big{font-size:74px;font-weight:800;line-height:1}
 .court-frame .csym{font-size:38px;line-height:1}
 .court-frame .jmask{font-size:78px;line-height:1}
-.pf-name{position:absolute;bottom:12px;left:0;right:0;text-align:center;font-size:12px;font-weight:700;color:#8d8468;letter-spacing:2px}
 /* ---------- 打印 ---------- */
 .sheet{display:none}
 @media print{
@@ -421,7 +420,6 @@ function frontHtml(it){
     '<div class="pf-corner"><b>' + it.r + '</b><span>' + s.sym + '</span></div>' +
     '<div class="pf-corner br"><b>' + it.r + '</b><span>' + s.sym + '</span></div>' +
     inner +
-    '<div class="pf-name">' + (joker ? s.label : (ex ? '废土物资 · 隐藏卡' : s.label + ' · ' + it.name)) + '</div>' +
   '</div>';
 }
 /* 屏显桌面：默认亮背面（物资卡），点击翻到牌面 */
