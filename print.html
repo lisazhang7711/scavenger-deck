@@ -82,7 +82,20 @@ h1 small{font-size:13px;color:#9a927d;font-weight:400;display:block;margin-top:6
   background:linear-gradient(160deg,rgba(0,0,0,.045),rgba(0,0,0,0) 55%)}
 .court-frame .big{font-size:74px;font-weight:800;line-height:1}
 .court-frame .csym{font-size:38px;line-height:1}
-.court-frame .jmask{font-size:78px;line-height:1}
+/* 大小王：中央线描小丑面具 + JOKER；大王红、小王黑（真牌就是红王压黑王） */
+.jface{position:absolute;left:15%;right:15%;top:13%;bottom:13%;border:2.5px solid currentColor;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.jface .jmask{width:118px;height:118px;display:block}
+.jface .jword{font-size:15px;font-weight:800;letter-spacing:7px;text-indent:7px;line-height:1}
+/* 隐藏卡：照真牌里「赠品牌 / 广告牌」的做法——不带角标，整面只排名字 */
+.adface{position:absolute;left:7%;right:7%;top:8%;bottom:8%;border:2px solid #c9c0a4;border-radius:8px;
+  box-shadow:inset 0 0 0 4px #fbfaf4,inset 0 0 0 5.5px #ddd4b8;
+  display:flex;align-items:center;justify-content:center;flex-direction:column;color:#241f18}
+.adface .star{font-size:15px;color:#b03028;line-height:1;margin-bottom:15px}
+.adface .nm{font-size:33px;font-weight:700;letter-spacing:10px;text-indent:10px;line-height:1}
+.adface .ln{width:92px;height:1.5px;background:#b6ac90;margin:17px 0}
+.adface .tg{font-size:13px;letter-spacing:6px;text-indent:6px;color:#6f6754;line-height:1}
+.adface .en{font-size:9px;letter-spacing:2.8px;color:#a49c86;margin-top:11px;line-height:1}
 /* ---------- 打印 ---------- */
 .sheet{display:none}
 @media print{
@@ -394,33 +407,51 @@ var LAY = {
   '9':[[29,18],[71,18],[29,39],[71,39],[50,50],[29,61,1],[71,61,1],[29,82,1],[71,82,1]],
   '10':[[29,18],[71,18],[50,29],[29,39],[71,39],[29,61,1],[71,61,1],[50,71,1],[29,82,1],[71,82,1]]
 };
+/* 小丑面具：实心剪影 + 镂空眼窝/嘴（跟真牌的剪影式图形一个道理，缩到 63mm 也不糊）
+ * cry=true 是哭脸：垂嘴 + 一滴泪；false 是笑脸 */
+var MASK = {
+  body: 'M60 4 C 33 4 16 18 14 40 C 12 58 15 74 22 86 C 29 100 44 118 60 118 C 76 118 91 100 98 86 C 105 74 108 58 106 40 C 104 18 87 4 60 4 Z',
+  eyes: 'M28 54 C 33 43 47 43 52 54 C 47 63 33 63 28 54 Z M68 54 C 73 43 87 43 92 54 C 87 63 73 63 68 54 Z',
+  smile: 'M38 78 C 46 98 74 98 82 78 C 74 88 46 88 38 78 Z',
+  cry: 'M44 88 C 50 71 70 71 76 88 C 70 79 50 79 44 88 Z',
+  tear: 'M86 70 C 83 76 80 80 80 84 C 80 89 83 92 86 92 C 89 92 92 89 92 84 C 92 80 89 76 86 70 Z'
+};
+function maskSvg(cry){
+  var d = MASK.body + ' ' + MASK.eyes + ' ' + (cry ? MASK.cry + ' ' + MASK.tear : MASK.smile);
+  return '<svg class="jmask" viewBox="0 0 120 122" fill="currentColor" fill-rule="evenodd">' +
+    '<path d="' + d + '"/></svg>';
+}
 function frontHtml(it){
   var joker = it.s==='BJ'||it.s==='SJ';
   var ex = it.s==='EX';
-  var s = (joker||ex) ? {sym:'★',cls:'red',label:'废土物资 · 王'} : SUIT[it.s];
+  var sym = (joker||ex) ? '★' : SUIT[it.s].sym;
+  var cls = joker ? (it.s==='BJ' ? 'red' : '') : (ex ? '' : SUIT[it.s].cls);
   var inner;
   if (ex) {
-    inner = '<div class="court-frame"><div class="jmask">' + it.emoji + '</div>' +
-      '<div style="font-size:17px;font-weight:800;letter-spacing:3px">' + it.name + '</div>' +
-      '<div style="font-size:13px">' + it.tag + '</div></div>';
+    /* 赠品牌：一个角标都不印，整面只排名字 */
+    inner = '<div class="adface">' +
+      '<div class="star">★</div>' +
+      '<div class="nm">' + it.name + '</div>' +
+      '<div class="ln"></div>' +
+      '<div class="tg">' + it.tag + '</div>' +
+      '<div class="en">NOT FOR SALE</div>' +
+    '</div>';
   } else if (joker) {
-    inner = '<div class="court-frame"><div class="jmask">🎭</div>' +
-      '<div style="font-size:15px;font-weight:800;letter-spacing:3px">JOKER</div>' +
-      '<div style="font-size:13px">' + it.name + ' · ' + it.tag + '</div></div>';
+    inner = '<div class="jface">' + maskSvg(it.s==='SJ') +
+      '<div class="jword">JOKER</div></div>';
   } else if (it.r === 'A') {
-    inner = '<div class="pipabs ace" style="left:50%;top:47%">' + s.sym + '</div>';
+    inner = '<div class="pipabs ace" style="left:50%;top:47%">' + sym + '</div>';
   } else if (LAY[it.r]) {
     inner = LAY[it.r].map(function (p) {
-      return '<div class="pipabs' + (p[2] ? ' rot' : '') + '" style="left:' + p[0] + '%;top:' + p[1] + '%">' + s.sym + '</div>';
+      return '<div class="pipabs' + (p[2] ? ' rot' : '') + '" style="left:' + p[0] + '%;top:' + p[1] + '%">' + sym + '</div>';
     }).join('');
   } else { /* K / Q / J 宫廷牌：字 + 花色 + 装饰框 */
-    inner = '<div class="court-frame"><div class="big">' + it.r + '</div><div class="csym">' + s.sym + '</div></div>';
+    inner = '<div class="court-frame"><div class="big">' + it.r + '</div><div class="csym">' + sym + '</div></div>';
   }
-  return '<div class="card front ' + s.cls + '">' +
-    '<div class="pf-corner"><b>' + it.r + '</b><span>' + s.sym + '</span></div>' +
-    '<div class="pf-corner br"><b>' + it.r + '</b><span>' + s.sym + '</span></div>' +
-    inner +
-  '</div>';
+  var corners = ex ? '' :
+    '<div class="pf-corner"><b>' + it.r + '</b><span>' + sym + '</span></div>' +
+    '<div class="pf-corner br"><b>' + it.r + '</b><span>' + sym + '</span></div>';
+  return '<div class="card front ' + cls + '">' + corners + inner + '</div>';
 }
 /* 屏显桌面：默认亮背面（物资卡），点击翻到牌面 */
 var table = document.getElementById('table');
