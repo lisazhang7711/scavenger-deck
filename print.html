@@ -82,15 +82,14 @@ h1 small{font-size:13px;color:#9a927d;font-weight:400;display:block;margin-top:6
   background:linear-gradient(160deg,rgba(0,0,0,.045),rgba(0,0,0,0) 55%)}
 .court-frame .big{font-size:74px;font-weight:800;line-height:1}
 .court-frame .csym{font-size:38px;line-height:1}
-/* 大小王：整幅线稿铺进牌面。原图自带外框线与四角 ♥♣♠♦，
- * 小王用黑白版，大王用「黑线全转红、边框与四角花色保持原色」的红版。
- * JOKER 一上一下分踞图外留白——原图把四角花色画死了，字放对角会压住它们 */
+/* 大小王：整幅线稿铺进牌面（四角 ♥♣♠♦ 已在图片端抹掉，外框断口补成圆角）。
+ * 按现代扑克牌的做法：JOKER 竖排在左上角，右下角倒排一个，中间留整幅小丑 */
 .jart{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);line-height:0;text-align:center}
 .jart img{width:104%;margin-left:-2%;display:block}
-.jtag{position:absolute;left:0;right:0;text-align:center;font-size:10px;font-weight:700;
-  letter-spacing:8px;text-indent:8px;color:#8d846d;line-height:1}
-.jtag.up{top:15px}
-.jtag.dn{top:355px}
+.pf-jidx{position:absolute;writing-mode:vertical-rl;font-size:9.5px;font-weight:800;
+  letter-spacing:2px;line-height:1;color:currentColor;z-index:3}
+.pf-jidx.tl{top:71px;left:17px}
+.pf-jidx.br{bottom:71px;right:17px;transform:rotate(180deg)}
 /* 隐藏卡 EX：照真牌「赠品牌 / 广告牌」的做法——不带角标，上图下文 */
 .adface{position:absolute;left:6%;right:6%;top:6%;bottom:6%;
   border:1.5px solid #c9c0a4;border-radius:6px;overflow:hidden;background:#fbfaf4;
@@ -127,7 +126,7 @@ h1 small{font-size:13px;color:#9a927d;font-weight:400;display:block;margin-top:6
   <p class="intro">
     四个花色，四类价值：<b>♠ 军粮与罐头</b>（末日硬通货，按黑面包计价）、<b>♥ 废土热乎饭</b>（0 元生存副本掉落）、
     <b>♦ 换钱装备</b>（废品回收站行情）、<b>♣ 生存工具</b>（使用价值）。A 最大、2 最小，花色内按物资价值排序。
-    大小王是同一幅小丑线稿：小王黑白，大王把线稿全染红，只留外框与四角花色不动；另有一张不参与交易的「非卖品」。点卡片翻面。
+    大小王是同一幅小丑线稿：小王黑白，大王把线稿全染红；角标按现代扑克牌的排法，JOKER 竖排在左上与右下。另有一张不参与交易的「非卖品」。点卡片翻面。
   </p>
   <p class="intro">
     背面五色分类：军粮铁灰蓝、热乎饭砖红、换钱装备铜金、生存工具苔绿、王牌绛紫。铭牌与右下角三角同色，摊在桌上能直接分堆。
@@ -424,7 +423,7 @@ function frontHtml(it){
   var joker = it.s==='BJ'||it.s==='SJ';
   var ex = it.s==='EX';
   var sym = SUIT[it.s] ? SUIT[it.s].sym : '★';
-  var cls = (joker||ex) ? '' : SUIT[it.s].cls;
+  var cls = ex ? '' : (it.s==='BJ' ? 'red' : (joker ? '' : SUIT[it.s].cls));
   var inner;
   if (ex) {
     /* 赠品牌：不带角标，上半整幅画、下半名字与「非卖品」 */
@@ -438,10 +437,10 @@ function frontHtml(it){
       '</div>' +
     '</div>';
   } else if (joker) {
-    /* 原图自带外框和四角花色，直接整幅放进牌面；上下留白处补 JOKER 字样 */
-    inner = '<div class="jtag up">JOKER</div>' +
-      '<div class="jart"><img src="art/' + (it.s==='SJ' ? 'joker-bw' : 'joker-red') + '.jpg" alt=""></div>' +
-      '<div class="jtag dn">JOKER</div>';
+    /* 现代做法：不印满幅上下字样，只在左上/右下角排竖版 JOKER 角标 */
+    inner = '<div class="jart"><img src="art/' + (it.s==='SJ' ? 'joker-bw' : 'joker-red') + '.jpg" alt=""></div>' +
+      '<div class="pf-jidx tl">JOKER</div>' +
+      '<div class="pf-jidx br">JOKER</div>';
   } else if (it.r === 'A') {
     inner = '<div class="pipabs ace" style="left:50%;top:47%">' + sym + '</div>';
   } else if (LAY[it.r]) {
